@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo App</title>
+</head>
+<body>
+    <h1>ToDo List</h1>
+    <ul>
+        {{range .}}
+        <li>
+            {{.Name}}
+            <a href="/delete/{{.ID}}">Delete</a>
+        </li>
+        {{end}}
+    </ul>
+    <form action="/add" method="post">
+        <label for="name">New Task:</label>
+        <input type="text" id="name" name="name" required>
+        <button type="submit">Add Task</button>
+    </form>
+</body>
+</html>
