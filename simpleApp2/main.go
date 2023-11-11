@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type Task struct {
@@ -54,14 +55,53 @@ func deleteTask(c echo.Context) error {
 	return c.Redirect(http.StatusFound, "/")
 }
 
+func updateTaskForm(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Invalid task ID")
+	}
+
+	taskToUpdate := Task{}
+	for _, task := range tasks {
+		if task.ID == id {
+			taskToUpdate = task
+			break
+		}
+	}
+
+	return render(c, http.StatusOK, "update.html", taskToUpdate)
+}
+
+func updateTask(c echo.Context) error {
+	id, err := strconv.Atoi(c.FormValue("id"))
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Invalid task ID")
+	}
+
+	newName := c.FormValue("name")
+	for i, task := range tasks {
+		if task.ID == id {
+			tasks[i].Name = newName
+			break
+		}
+	}
+
+	return c.Redirect(http.StatusFound, "/")
+}
+
 func main() {
 	e := echo.New()
+
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
 	e.Static("/static", "static")
 
 	e.GET("/", getTasks)
 	e.POST("/add", addTask)
 	e.GET("/delete/:id", deleteTask)
+	e.GET("/update/:id", updateTaskForm)
+	e.POST("/update", updateTask)
 
 	e.Renderer = &Template{
 		templates: template.Must(template.ParseGlob("templates/*.html")),
